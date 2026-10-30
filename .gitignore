@@ -1,0 +1,7 @@
+downloads-geofabrik/
+site/
+spike/
+.superpowers/
+__pycache__/
+.pytest_cache/
+*.pbf
