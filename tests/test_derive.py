@@ -22,6 +22,12 @@ def test_ferry_needs_cars():
     assert not bus_allowed({'motorcar': 'yes', 'hgv': 'no'}, True)
 
 
+def test_ferry_with_a_road_class_carries_cars():
+    assert bus_allowed({'ferry': 'tertiary'}, True)
+    assert not bus_allowed({'ferry': 'local'}, True)
+    assert not bus_allowed({'ferry': 'tertiary', 'motor_vehicle': 'no'}, True)
+
+
 def test_direction_as_a_bus_sees_it():
     assert direction({'oneway': 'yes'}, 'primary') == 1
     assert direction({'oneway': '-1'}, 'primary') == 2

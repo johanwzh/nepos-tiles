@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="hand">
+  <!-- 3x3 grid: node id = 10 * row + col + 1; row 0 at lat 59.90, col 0 at lon 10.00, 0.01 deg apart -->
+  <node id="1" lat="59.90" lon="10.00" version="1"/>
+  <node id="2" lat="59.90" lon="10.01" version="1"/>
+  <node id="3" lat="59.90" lon="10.02" version="1"/>
+  <node id="11" lat="59.91" lon="10.00" version="1"/>
+  <node id="12" lat="59.91" lon="10.01" version="1"/>
+  <node id="13" lat="59.91" lon="10.02" version="1"/>
+  <node id="21" lat="59.92" lon="10.00" version="1"/>
+  <node id="22" lat="59.92" lon="10.01" version="1"/>
+  <node id="23" lat="59.92" lon="10.02" version="1"/>
+  <node id="31" lat="59.95" lon="10.00" version="1"/>
+  <node id="32" lat="59.95" lon="10.10" version="1"/>
+  <node id="33" lat="59.96" lon="10.10" version="1"/>
+  <!-- two-way residential street along row 0 -->
+  <way id="100" version="1">
+    <nd ref="1"/><nd ref="2"/><nd ref="3"/>
+    <tag k="highway" v="residential"/><tag k="name" v="Storgata"/>
+  </way>
+  <!-- oneway primary along row 1 -->
+  <way id="101" version="1">
+    <nd ref="11"/><nd ref="12"/><nd ref="13"/>
+    <tag k="highway" v="primary"/><tag k="oneway" v="yes"/><tag k="ref" v="Rv 4"/><tag k="maxspeed" v="60"/>
+  </way>
+  <!-- column 1, crosses rows 0 and 1 -->
+  <way id="102" version="1">
+    <nd ref="2"/><nd ref="12"/><nd ref="22"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+  <!-- column 0 -->
+  <way id="103" version="1">
+    <nd ref="1"/><nd ref="11"/>
+    <tag k="highway" v="tertiary"/>
+  </way>
+  <!-- bus=no street along row 2 -->
+  <way id="104" version="1">
+    <nd ref="21"/><nd ref="22"/><nd ref="23"/>
+    <tag k="highway" v="residential"/><tag k="bus" v="no"/>
+  </way>
+  <!-- a footway: not a road -->
+  <way id="105" version="1">
+    <nd ref="3"/><nd ref="13"/>
+    <tag k="highway" v="footway"/>
+  </way>
+  <!-- ferry with no car tags on the way; its route relation says cars -->
+  <way id="200" version="1">
+    <nd ref="31"/><nd ref="32"/>
+    <tag k="route" v="ferry"/><tag k="name" v="Moss - Horten"/>
+  </way>
+  <!-- ferry with nothing: passengers only -->
+  <way id="201" version="1">
+    <nd ref="32"/><nd ref="33"/>
+    <tag k="route" v="ferry"/>
+  </way>
+  <relation id="300" version="1">
+    <member type="way" ref="200" role=""/>
+    <tag k="type" v="route"/><tag k="route" v="ferry"/><tag k="motor_vehicle" v="yes"/>
+  </relation>
+  <!-- restrictions at node 12 / 2 -->
+  <relation id="400" version="1">
+    <member type="way" ref="101" role="from"/><member type="node" ref="12" role="via"/>
+    <member type="way" ref="102" role="to"/>
+    <tag k="type" v="restriction"/><tag k="restriction" v="no_left_turn"/>
+  </relation>
+  <relation id="401" version="1">
+    <member type="way" ref="102" role="from"/><member type="node" ref="12" role="via"/>
+    <member type="way" ref="101" role="to"/>
+    <tag k="type" v="restriction"/><tag k="restriction" v="no_right_turn"/><tag k="except" v="psv;bicycle"/>
+  </relation>
+  <relation id="402" version="1">
+    <member type="way" ref="100" role="from"/><member type="node" ref="2" role="via"/>
+    <member type="way" ref="100" role="to"/>
+    <tag k="type" v="restriction"/><tag k="restriction:bus" v="only_straight_on"/>
+  </relation>
+  <relation id="403" version="1">
+    <member type="way" ref="103" role="from"/><member type="way" ref="101" role="via"/>
+    <member type="way" ref="102" role="to"/>
+    <tag k="type" v="restriction"/><tag k="restriction" v="no_u_turn"/>
+  </relation>
+</osm>

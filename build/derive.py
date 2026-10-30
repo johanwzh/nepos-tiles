@@ -14,11 +14,12 @@ MPH = 1.609344
 
 
 def bus_allowed(tags, ferry):
-    """Most specific tag wins; only an explicit 'no' keeps a bus off. A ferry needs a sign that it carries cars."""
+    """Most specific tag wins; only an explicit 'no' keeps a bus off. A ferry needs a sign that it carries cars:
+    a vehicle tag, or ferry=<road class> (the road it carries, e.g. Kragerø - Skåtøyroa)."""
     if ferry:
-        if tags.get('bus') == 'no' or tags.get('hgv') == 'no':
+        if any(tags.get(k) == 'no' for k in ('bus', 'hgv', 'motor_vehicle', 'motorcar')):
             return False
-        return any(tags.get(k) in YES for k in ('motor_vehicle', 'motorcar', 'hgv', 'bus'))
+        return tags.get('ferry') in ROAD_CLASSES or any(tags.get(k) in YES for k in ('motor_vehicle', 'motorcar', 'hgv', 'bus'))
     for k in ('bus', 'psv', 'motor_vehicle', 'vehicle', 'access'):
         v = tags.get(k)
         if v == 'no':
