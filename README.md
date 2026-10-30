@@ -23,5 +23,8 @@ Python 3.12 or later.
 ```
 pip install -r requirements.txt
 python -m pytest -q
-python -m build <extract.osm.pbf> <out dir>
+python -m build <extract.osm.pbf> <out dir> [--bbox minlon,minlat,maxlon,maxlat]
 ```
+
+`--bbox` keeps only the ways with a node inside the box (small test sets). The command prints the counts, tile sizes,
+time and, on Linux, peak memory.
