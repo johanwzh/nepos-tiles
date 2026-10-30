@@ -1,0 +1,70 @@
+name: Build road tiles
+
+on:
+  schedule:
+    - cron: '0 3 2 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update -q
+          sudo apt-get install -y -q osmium-tool
+
+      - name: Test
+        run: python -m pytest -q
+
+      - name: Download Norway
+        run: curl -fsSL -o norway.osm.pbf https://download.geofabrik.de/europe/norway-latest.osm.pbf
+
+      - name: Keep roads, ferries and restrictions
+        run: |
+          osmium tags-filter norway.osm.pbf w/highway w/route=ferry r/type=restriction r/route=ferry -o roads.osm.pbf
+          rm norway.osm.pbf
+          ls -l roads.osm.pbf
+          df -h .
+
+      - name: Build tiles
+        run: python -m build roads.osm.pbf site/road
+
+      - name: Site and manifest
+        run: |
+          cp site-template/index.html site/
+          mkdir -p manifests
+          cp site/road/manifest.json manifests/road.json
+          date=$(python -c "import json; print(json.load(open('manifests/road.json'))['dataDate'])")
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add manifests/road.json
+          git commit -m "Tiles: road build ${date}"
+          git push
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
