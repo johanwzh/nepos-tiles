@@ -110,4 +110,47 @@ def build_tiles(net) -> dict:
                 if len(pts) >= 2:
                     cut(way_id, attr, name, pts, ('n', ids[s]), ('n', ids[i]))
                 s = i
-    return dict(tiles)
+    tiles = dict(tiles)
+    _place_restrictions(net, tiles)
+    return tiles
+
+
+def _place_restrictions(net, tiles):
+    """Point each restriction at the edges of its from/to ways that touch the via node, in the via node's tile.
+    A from or to way that passes through the via node (two edges there) is ambiguous and skipped."""
+    at = defaultdict(list)                        # (way id, via key) -> [(tile key, edge index)]
+    wanted = {('n', r[1]) for r in net.restrictions}
+    for tk, t in tiles.items():
+        for i, e in enumerate(t.edges):
+            for key in {e.ka, e.kb}:
+                if key in wanted:
+                    at[(e.way_id, key)].append((tk, i))
+    stats = net.stats
+
+    def count(name):
+        stats[name] = stats.get(name, 0) + 1
+
+    for from_way, via, to_way, only in net.restrictions:
+        key = ('n', via)
+        froms, tos = at[(from_way, key)], at[(to_way, key)]
+        if not froms or not tos:
+            count('restrictions_unmatched')
+            continue
+        if from_way == to_way:
+            if only:
+                count('restrictions_ambiguous')
+                continue
+            pairs = [(f, f) for f in froms]       # no U-turn back onto the same edge
+        elif len(froms) > 1 or len(tos) > 1:
+            count('restrictions_ambiguous')
+            continue
+        else:
+            pairs = [(froms[0], tos[0])]
+        placed = False
+        for (ftk, fi), (ttk, ti) in pairs:
+            if ftk == ttk:
+                t = tiles[ftk]
+                t.restrictions.append((fi, t.nodes[key], ti, only))
+                placed = True
+        if not placed:
+            count('restrictions_cross_tile')

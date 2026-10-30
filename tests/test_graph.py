@@ -65,3 +65,60 @@ def test_repeated_points_dropped():
     tiles = build_tiles(network([way(1, [(10.01, LAT), (10.01, LAT), (10.02, LAT)])]))
     (_, e), = all_edges(tiles)
     assert e.points == [(round(10.01 * Q), round(LAT * Q)), (round(10.02 * Q), round(LAT * Q))]
+
+
+def test_restriction_points_at_the_edges_touching_the_via_node():
+    # way 1 runs west-east through junctions 2 (with way 3) and 4 (via, with way 2); 3 edges
+    a = way(1, [(10.01, LAT), (10.02, LAT), (10.03, LAT), (10.04, LAT)], [1, 2, 3, 4])
+    side = way(3, [(10.02, LAT), (10.02, LAT + 0.01)], [2, 7])
+    other = way(5, [(10.03, LAT), (10.03, LAT - 0.01)], [3, 8])
+    b = way(2, [(10.04, LAT), (10.04, LAT + 0.01)], [4, 5])
+    net = network([a, side, other, b], [(1, 4, 2, False)])
+    t = build_tiles(net)[(40, 479)]
+    (from_edge, via, to_edge, only), = t.restrictions
+    assert t.edges[from_edge].way_id == 1 and t.edges[from_edge].kb == ('n', 4)
+    assert t.edges[to_edge].way_id == 2 and t.edges[to_edge].ka == ('n', 4)
+    assert via == t.nodes[('n', 4)]
+    assert only is False
+
+
+def test_restriction_with_from_way_not_touching_via_is_dropped_and_counted():
+    a = way(1, [(10.01, LAT), (10.02, LAT)], [1, 2])
+    b = way(2, [(10.02, LAT), (10.03, LAT)], [2, 3])
+    net = network([a, b], [(1, 3, 2, True)])
+    t = build_tiles(net)[(40, 479)]
+    assert t.restrictions == []
+    assert net.stats['restrictions_unmatched'] == 1
+
+
+def test_restriction_across_tiles_is_dropped_and_counted():
+    a = way(1, [(10.24, LAT), (10.25, LAT)], [1, 2])
+    b = way(2, [(10.25, LAT), (10.26, LAT)], [2, 3])       # via node 2 on the grid line: b is in the next tile
+    net = network([a, b], [(1, 2, 2, False)])
+    tiles = build_tiles(net)
+    assert all(t.restrictions == [] for t in tiles.values())
+    assert net.stats['restrictions_cross_tile'] == 1
+
+
+def test_no_u_turn_on_the_same_way():
+    a = way(1, [(10.01, LAT), (10.02, LAT), (10.03, LAT)], [1, 2, 3])
+    b = way(2, [(10.02, LAT), (10.02, LAT + 0.01)], [2, 4])
+    net = network([a, b], [(1, 2, 1, False)])
+    t = build_tiles(net)[(40, 479)]
+    assert sorted((f, v, x) for f, v, x, _ in t.restrictions) == [(0, 1, 0), (1, 1, 1)]
+
+
+def test_from_edge_may_start_at_the_via_node():
+    a = way(1, [(10.02, LAT), (10.03, LAT)], [2, 3])         # drawn away from the via node
+    b = way(2, [(10.02, LAT), (10.02, LAT + 0.01)], [2, 4])
+    t = build_tiles(network([a, b], [(1, 2, 2, False)]))[(40, 479)]
+    assert [(f, x) for f, _, x, _ in t.restrictions] == [(0, 1)]
+
+
+def test_from_way_passing_through_the_via_node_is_ambiguous():
+    a = way(1, [(10.01, LAT), (10.02, LAT), (10.03, LAT)], [1, 2, 3])
+    b = way(2, [(10.02, LAT), (10.02, LAT + 0.01)], [2, 4])
+    net = network([a, b], [(1, 2, 2, False)])
+    t = build_tiles(net)[(40, 479)]
+    assert t.restrictions == []
+    assert net.stats['restrictions_ambiguous'] == 1
