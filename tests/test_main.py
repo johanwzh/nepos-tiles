@@ -18,7 +18,7 @@ def run(*args):
 
 def test_build_writes_tiles_and_manifest(tmp_path):
     out = tmp_path / 'road'
-    result = run(SMALL, out)
+    result = run(SMALL, tmp_path)
     assert 'tiles' in result.stdout
     manifest = json.loads((out / 'manifest.json').read_text())
     assert manifest['format'] == 'NPT2'
@@ -39,9 +39,24 @@ def test_build_writes_tiles_and_manifest(tmp_path):
 
 def test_bbox_keeps_ways_with_a_node_inside(tmp_path):
     out = tmp_path / 'road'
-    run(SMALL, out, '--bbox', '9.99,59.89,10.005,59.915')        # around nodes 1 and 11 only
+    run(SMALL, tmp_path, '--sets', 'road', '--bbox', '9.99,59.89,10.005,59.915')        # around nodes 1 and 11 only
     manifest = json.loads((out / 'manifest.json').read_text())
     ways = set()
     for key in manifest['tiles']:
         ways |= {e['way'] for e in decode(gzip.decompress((out / f'{key}.bin.gz').read_bytes()))['edges']}
     assert ways == {100, 101, 103}
+
+
+def test_build_writes_each_set(tmp_path):
+    result = run(SMALL, tmp_path, '--sets', 'rail,ferry')
+    assert sorted(p.name for p in tmp_path.iterdir()) == ['ferry', 'rail']
+    for name in ('rail', 'ferry'):
+        manifest = json.loads((tmp_path / name / 'manifest.json').read_text())
+        assert manifest['set'] == name
+        assert manifest['tiles']
+        assert name in result.stdout
+
+
+def test_every_set_by_default(tmp_path):
+    run(SMALL, tmp_path)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ['cable', 'ferry', 'metro', 'rail', 'road', 'tram']

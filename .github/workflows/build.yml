@@ -1,4 +1,4 @@
-name: Build road tiles
+name: Build tiles
 
 on:
   schedule:
@@ -40,26 +40,26 @@ jobs:
       - name: Download Norway
         run: curl -fsSL -o norway.osm.pbf https://download.geofabrik.de/europe/norway-latest.osm.pbf
 
-      - name: Keep roads, ferries and restrictions
+      - name: Keep roads, tracks, cableways, ferries and restrictions
         run: |
-          osmium tags-filter norway.osm.pbf w/highway w/route=ferry r/type=restriction r/route=ferry -o roads.osm.pbf
+          osmium tags-filter norway.osm.pbf w/highway w/railway w/aerialway w/route=ferry r/type=restriction r/route=ferry -o net.osm.pbf
           rm norway.osm.pbf
-          ls -l roads.osm.pbf
+          ls -l net.osm.pbf
           df -h .
 
       - name: Build tiles
-        run: python -m build roads.osm.pbf site/road
+        run: python -m build net.osm.pbf site
 
       - name: Site and manifest
         run: |
           cp site-template/index.html site/
           mkdir -p manifests
-          cp site/road/manifest.json manifests/road.json
+          for d in site/*/; do s=$(basename "$d"); cp "site/$s/manifest.json" "manifests/$s.json"; done
           date=$(python -c "import json; print(json.load(open('manifests/road.json'))['dataDate'])")
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add manifests/road.json
-          git commit -m "Tiles: road build ${date}"
+          git add manifests/*.json
+          git commit -m "Tiles: build ${date}"
           git push
 
       - uses: actions/upload-pages-artifact@v3
