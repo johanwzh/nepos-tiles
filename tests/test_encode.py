@@ -38,3 +38,13 @@ def test_sections_are_4_byte_aligned():
 def test_ferry_flag():
     t = build_tiles(network([way(1, [(10.01, LAT), (10.02, LAT)], attr=(4, 0, 0, 0, 0, 0, 0))]))[(40, 479)]
     assert decode(encode(t))['attrs'] == [(4, 0, 0, 1, 0, 0, 0, 0)]
+
+
+def test_a_level_crossing_is_flagged_in_the_node_byte():
+    """Bit 0 of the node byte: on a tile border; bit 1: tracks cross here without a link (final review 2026-11-01)."""
+    a = way(1, [(10.01, LAT), (10.02, LAT), (10.03, LAT)], [1, 9, 3], attr=(0, 0, 0, 0, 0, 0, 0))
+    b = way(2, [(10.02, LAT - 0.01), (10.02, LAT), (10.02, LAT + 0.01)], [4, 9, 5], attr=(0, 0, 0, 0, 0, 0, 0))
+    t = build_tiles(network([a, b])._replace(crossings=frozenset({9})))[(40, 479)]
+    flags = {(n[0], n[1]): n[2] for n in decode(encode(t))['nodes']}
+    assert flags[(round(10.02 * 1e7), round(LAT * 1e7))] == 2
+    assert sorted(set(flags.values())) == [0, 2]

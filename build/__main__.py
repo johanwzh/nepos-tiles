@@ -13,13 +13,13 @@ import time
 from build.derive import SETS
 from build.encode import encode
 from build.graph import TILE_LAT, TILE_LON, build_tiles
-from build.read import Q, Network, read_sets
+from build.read import Q, read_sets
 
 
 def _in_bbox(net, bbox):
     x0, y0, x1, y1 = (round(v * Q) for v in bbox)
     ways = [w for w in net.ways if any(x0 <= x <= x1 and y0 <= y <= y1 for x, y in zip(w[4], w[5]))]
-    return Network(ways, net.restrictions, net.stats, net.data_date)
+    return net._replace(ways=ways)
 
 
 def _peak_memory_mb():

@@ -58,6 +58,9 @@
   <node id="42" lat="59.97" lon="10.01" version="1"/>
   <node id="43" lat="59.97" lon="10.02" version="1"/>
   <node id="44" lat="59.98" lon="10.02" version="1"/>
+  <node id="45" lat="59.975" lon="10.02" version="1"><tag k="railway" v="railway_crossing"/></node>
+  <node id="46" lat="59.975" lon="10.01" version="1"/>
+  <node id="47" lat="59.975" lon="10.03" version="1"/>
   <way id="500" version="1">
     <nd ref="41"/><nd ref="42"/>
     <tag k="railway" v="rail"/><tag k="maxspeed" v="130"/><tag k="name" v="Gjøvikbanen"/>
@@ -67,7 +70,7 @@
     <tag k="railway" v="light_rail"/>
   </way>
   <way id="502" version="1">
-    <nd ref="43"/><nd ref="44"/>
+    <nd ref="43"/><nd ref="45"/><nd ref="44"/>
     <tag k="railway" v="tram"/><tag k="oneway" v="yes"/>
   </way>
   <way id="503" version="1">
@@ -92,6 +95,10 @@
   </way>
   <way id="508" version="1">
     <nd ref="33"/><nd ref="31"/>
+  </way>
+  <way id="509" version="1">
+    <nd ref="46"/><nd ref="45"/><nd ref="47"/>
+    <tag k="railway" v="tram"/>
   </way>
   <relation id="301" version="1">
     <member type="way" ref="508" role=""/>

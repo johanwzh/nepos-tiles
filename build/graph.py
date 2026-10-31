@@ -31,9 +31,11 @@ class Edge:
 
 
 class Tile:
-    """Nodes are keyed ('n', osm id) or ('b', qlon, qlat) for a cut on a grid line; nlist holds (qlon, qlat, border)."""
+    """Nodes are keyed ('n', osm id) or ('b', qlon, qlat) for a cut on a grid line; nlist holds (qlon, qlat, flags):
+    bit 0 on the tile border, bit 1 a level crossing of tracks (no turning from one track to the other)."""
 
-    def __init__(self):
+    def __init__(self, crossings=frozenset()):
+        self.crossings = crossings
         self.nodes, self.nlist, self.edges = {}, [], []
         self.attrs, self.names = {}, {}
         self.restrictions = []                 # (from_edge, via_node, to_edge, only), local indices
@@ -42,7 +44,9 @@ class Tile:
         i = self.nodes.get(key)
         if i is None:
             i = self.nodes[key] = len(self.nlist)
-            self.nlist.append((qlon, qlat, 1 if key[0] == 'b' or on_grid(qlon, qlat) else 0))
+            border = 1 if key[0] == 'b' or on_grid(qlon, qlat) else 0
+            crossing = 2 if key[0] == 'n' and key[1] in self.crossings else 0
+            self.nlist.append((qlon, qlat, border | crossing))
         return i
 
     def attr_list(self):
@@ -70,7 +74,7 @@ def _crossings(p0, p1):
 
 
 def build_tiles(net) -> dict:
-    tiles = defaultdict(Tile)
+    tiles = defaultdict(lambda: Tile(net.crossings))
     use = defaultdict(int)
     for _, _, _, ids, lons, lats in net.ways:
         last = len(ids) - 1

@@ -18,6 +18,14 @@ class Network(NamedTuple):
     restrictions: list    # (from_way, via_node, to_way, only)
     stats: dict
     data_date: str
+    crossings: frozenset = frozenset()   # track sets: nodes where tracks cross without a link (railway_crossing)
+
+
+def _level_crossings(path):
+    """Node ids tagged railway=railway_crossing: two tracks cross there, a train cannot turn from one to the other."""
+    fp = osmium.FileProcessor(path).with_filter(osmium.filter.EntityFilter(osmium.osm.NODE)) \
+        .with_filter(osmium.filter.TagFilter(('railway', 'railway_crossing')))
+    return frozenset(n.id for n in fp)
 
 
 def _relations(path, stats):
@@ -115,4 +123,6 @@ def read_sets(path: str, sets=SETS) -> dict:
             ways[name].append((w.id, attr, name_, ids, lons, lats))
             stats[name]['ways'] += 1
     date = _data_date(path)
-    return {name: Network(ways[name], restrictions if name == 'road' else [], dict(stats[name]), date) for name in sets}
+    crossings = _level_crossings(path) if any(name in ('rail', 'tram', 'metro', 'cable') for name in sets) else frozenset()
+    return {name: Network(ways[name], restrictions if name == 'road' else [], dict(stats[name]), date,
+                          crossings if name in ('rail', 'tram', 'metro', 'cable') else frozenset()) for name in sets}

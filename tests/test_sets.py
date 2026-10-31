@@ -49,7 +49,7 @@ def test_read_sets_tracks(nets):
     assert ids(nets['rail']) == [500]
     assert way(nets['rail'], 500)[1] == (TRACK_CLASS, 0, 130, 0, 0, 0, 0)
     assert way(nets['rail'], 500)[2] == 'Gjøvikbanen'
-    assert ids(nets['tram']) == [501, 502]
+    assert ids(nets['tram']) == [501, 502, 509]
     assert way(nets['tram'], 502)[1][1] == 1
     assert ids(nets['metro']) == [501, 503]
     assert ids(nets['cable']) == [505, 507]
@@ -68,3 +68,9 @@ def test_road_unchanged(nets):
 
 def test_only_the_sets_asked_for():
     assert sorted(read_sets(SMALL, ('rail', 'ferry'))) == ['ferry', 'rail']
+
+
+def test_level_crossings_of_tracks(nets):
+    """A node tagged railway=railway_crossing: tracks cross there without a link (final review 2026-11-01)."""
+    assert 45 in nets['tram'].crossings
+    assert nets['road'].crossings == frozenset()
