@@ -53,6 +53,50 @@
     <nd ref="32"/><nd ref="33"/>
     <tag k="route" v="ferry"/>
   </way>
+  <!-- tracks, cable and a relation-only ferry (routing for all modes, 2026-11-01) -->
+  <node id="41" lat="59.97" lon="10.00" version="1"/>
+  <node id="42" lat="59.97" lon="10.01" version="1"/>
+  <node id="43" lat="59.97" lon="10.02" version="1"/>
+  <node id="44" lat="59.98" lon="10.02" version="1"/>
+  <way id="500" version="1">
+    <nd ref="41"/><nd ref="42"/>
+    <tag k="railway" v="rail"/><tag k="maxspeed" v="130"/><tag k="name" v="Gjøvikbanen"/>
+  </way>
+  <way id="501" version="1">
+    <nd ref="42"/><nd ref="43"/>
+    <tag k="railway" v="light_rail"/>
+  </way>
+  <way id="502" version="1">
+    <nd ref="43"/><nd ref="44"/>
+    <tag k="railway" v="tram"/><tag k="oneway" v="yes"/>
+  </way>
+  <way id="503" version="1">
+    <nd ref="41"/><nd ref="44"/>
+    <tag k="railway" v="subway"/>
+  </way>
+  <way id="504" version="1">
+    <nd ref="41"/><nd ref="43"/>
+    <tag k="railway" v="disused"/><tag k="disused:railway" v="rail"/>
+  </way>
+  <way id="505" version="1">
+    <nd ref="42"/><nd ref="44"/>
+    <tag k="aerialway" v="gondola"/><tag k="name" v="Hafjell Gondolbane"/>
+  </way>
+  <way id="506" version="1">
+    <nd ref="41"/><nd ref="42"/>
+    <tag k="aerialway" v="goods"/>
+  </way>
+  <way id="507" version="1">
+    <nd ref="43"/><nd ref="41"/>
+    <tag k="railway" v="funicular"/>
+  </way>
+  <way id="508" version="1">
+    <nd ref="33"/><nd ref="31"/>
+  </way>
+  <relation id="301" version="1">
+    <member type="way" ref="508" role=""/>
+    <tag k="type" v="route"/><tag k="route" v="ferry"/><tag k="name" v="Nesoddbåten"/>
+  </relation>
   <relation id="300" version="1">
     <member type="way" ref="200" role=""/>
     <tag k="type" v="route"/><tag k="route" v="ferry"/><tag k="motor_vehicle" v="yes"/>

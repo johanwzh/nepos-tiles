@@ -9,6 +9,7 @@ ROAD_CLASSES = {
     'service': 3,
 }
 FERRY_CLASS = 4
+TRACK_CLASS = 0                    # every edge of a rail, tram, metro or cable set
 YES = {'yes', 'designated', 'permissive', 'destination', 'private', 'customers', 'delivery', 'official', 'permit'}
 MPH = 1.609344
 
@@ -74,3 +75,35 @@ def limit(tags, key):
 
 def label(tags):
     return ' / '.join(x for x in (tags.get('ref'), tags.get('name')) if x)
+
+
+# Routing for all modes (2026-11-01): the sets besides road, by the OSM tags a way needs. Light rail is in both tram
+# and metro, because OSM uses it for both (Bybanen, parts of the T-bane).
+SETS = ('road', 'rail', 'tram', 'metro', 'ferry', 'cable')
+RAILWAY_SETS = {'rail': {'rail'}, 'narrow_gauge': {'rail'}, 'tram': {'tram'}, 'light_rail': {'tram', 'metro'},
+                'subway': {'metro'}, 'funicular': {'cable'}}
+# Aerialways that carry people; goods lifts, zip lines and pylons are not
+AERIALWAYS = {'cable_car', 'gondola', 'mixed_lift', 'chair_lift', 'drag_lift', 't-bar', 'j-bar', 'platter',
+              'rope_tow', 'magic_carpet'}
+GONE = ('disused', 'abandoned', 'construction', 'proposed', 'razed', 'dismantled')
+
+
+def set_of_way(tags):
+    """The sets other than road a way belongs to (ferry by its own tag; relation members are added by the reader)."""
+    if any(tags.get(k) == 'yes' for k in GONE):
+        return set()
+    if tags.get('route') == 'ferry':
+        return {'ferry'}
+    if tags.get('aerialway') in AERIALWAYS:
+        return {'cable'}
+    return set(RAILWAY_SETS.get(tags.get('railway'), ()))
+
+
+def track_direction(tags):
+    """0 both, 1 forward, 2 backward: a track is two-way unless it says oneway."""
+    v = tags.get('oneway')
+    if v in ('yes', '1', 'true'):
+        return 1
+    if v == '-1':
+        return 2
+    return 0
