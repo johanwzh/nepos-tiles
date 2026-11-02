@@ -1,8 +1,8 @@
 {
  "format": "NPT2",
  "set": "cable",
- "built": "2026-11-01T00:36:06Z",
- "dataDate": "2026-10-30T21:24:51Z",
+ "built": "2026-11-02T11:03:43Z",
+ "dataDate": "2026-11-01T21:21:36Z",
  "source": "net.osm.pbf",
  "tileLon": 0.25,
  "tileLat": 0.125,
@@ -869,8 +869,8 @@
    "hash": "901cebb7510a"
   },
   "72_547": {
-   "size": 381,
-   "hash": "f393dfc0b4cd"
+   "size": 392,
+   "hash": "8b43a5e67d00"
   },
   "72_553": {
    "size": 65,
