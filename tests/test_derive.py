@@ -45,7 +45,12 @@ def test_speed():
 
 
 def test_limits():
-    assert limit({'maxheight': '3.2', 'maxheight:physical': '3.4'}, 'maxheight') == 3.4
+    # the lowest value counts (user 2026-11-03): a signed 3.2 under a measured 3.4 is 3.2; only :physical is that one
+    assert limit({'maxheight': '3.2', 'maxheight:physical': '3.4'}, 'maxheight') == 3.2
+    assert limit({'maxheight': '3.7', 'maxheight:physical': '3.5'}, 'maxheight') == 3.5
+    assert limit({'maxheight:physical': '3.9'}, 'maxheight') == 3.9
+    assert limit({'maxheight': 'default', 'maxheight:physical': '3.5'}, 'maxheight') == 3.5
+    assert limit({'maxweight': '8', 'maxweight:physical': 'x'}, 'maxweight') == 8
     assert limit({'maxweight': '3.5 t'}, 'maxweight') == 3.5
     assert limit({'maxheight': 'default'}, 'maxheight') == 0
     assert limit({'maxwidth': '2,5 m'}, 'maxwidth') == 2.5
@@ -56,3 +61,11 @@ def test_label():
     assert label({'ref': 'E 6', 'name': 'Adolf Hedins vei'}) == 'E 6 / Adolf Hedins vei'
     assert label({'name': 'Storgata'}) == 'Storgata'
     assert label({}) == ''
+
+
+def test_tertiary_has_a_class_of_its_own():
+    # Nepos keeps U-turns off tertiary roads (backlog 107); 2.6.0 reads class 5 at the minor roads' speed
+    assert ROAD_CLASSES['tertiary'] == 5
+    assert ROAD_CLASSES['tertiary_link'] == 5
+    assert ROAD_CLASSES['unclassified'] == 2
+    assert ROAD_CLASSES['residential'] == 2

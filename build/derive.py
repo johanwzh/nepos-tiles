@@ -4,7 +4,9 @@ import re
 ROAD_CLASSES = {
     'motorway': 0, 'motorway_link': 0, 'trunk': 0, 'trunk_link': 0,
     'primary': 1, 'primary_link': 1, 'secondary': 1, 'secondary_link': 1,
-    'tertiary': 2, 'tertiary_link': 2, 'unclassified': 2, 'residential': 2, 'living_street': 2, 'road': 2,
+    # tertiary has a class of its own (2026-11-03): Nepos allows U-turns on minor roads, not on tertiary; Nepos 2.6.0
+    # costs class 5 as a minor road
+    'tertiary': 5, 'tertiary_link': 5, 'unclassified': 2, 'residential': 2, 'living_street': 2, 'road': 2,
     'busway': 2, 'bus_guideway': 2,
     'service': 3,
 }
@@ -68,9 +70,10 @@ def speed_kmh(tags):
 
 
 def limit(tags, key):
-    """key:physical preferred; metres or tonnes; 0 when missing or unparseable."""
-    v, _ = _number(tags.get(key + ':physical') or tags.get(key))
-    return v
+    """The lowest of key and key:physical (user 2026-11-03: whatever the tag, the lowest value is the limit); metres or
+    tonnes; 0 when neither is a plain number."""
+    values = [v for v in (_number(tags.get(k))[0] for k in (key, key + ':physical')) if v > 0]
+    return min(values) if values else 0
 
 
 def label(tags):
